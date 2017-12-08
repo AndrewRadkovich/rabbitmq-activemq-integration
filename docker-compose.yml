@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+  rabbitmq:
+    image: 'bitnami/rabbitmq:latest'
+    labels:
+      kompose.service.type: nodeport
+    ports:
+      - '4369:4369'
+      - '5672:5672'
+      - '25672:25672'
+      - '15672:15672'
+    volumes:
+      - 'rabbitmq_data:/bitnami'
+  activemq:
+    image: 'webcenter/activemq'
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+      - "11098:11098"
+      - "11099:11099"
+volumes:
+  rabbitmq_data:
+    driver: local
