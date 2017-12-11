@@ -2,9 +2,7 @@ package com.godeltech.camel;
 
 import com.godeltech.camel.rabbitmq.topics.TopicConsumer;
 import com.godeltech.camel.rabbitmq.topics.TopicProducer;
-import org.apache.camel.Produce;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.RoutesBuilder;
+import org.apache.camel.*;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Test;
@@ -17,26 +15,18 @@ public class TopicCamelRabbiMqDemo extends CamelTestSupport {
     private ProducerTemplate producerTemplate;
 
     @Test
-    public void demoFireSystemEvent() throws Exception {
-        publish("system", "The System Event");
-    }
-
-    @Test
     public void demoFireBusinessEvent() throws Exception {
-        publish("businessevent", "The Business Event");
+        publish("business.user.login", "The Business Event");
     }
 
     @Override
     protected RoutesBuilder[] createRouteBuilders() throws Exception {
         return new RoutesBuilder[]{
                 new TopicProducer(),
-                new TopicConsumer("system.app1.exception", new ConsumerBean()),
-                new TopicConsumer("system.app1.executor1.started", new ConsumerBean()),
-                new TopicConsumer("system.*.*.*", new ConsumerBean()),
-                new TopicConsumer("business.user.register", new ConsumerBean()),
-                new TopicConsumer("business.user.*", new ConsumerBean()),
-                new TopicConsumer("business.#", new ConsumerBean()),
-                new TopicConsumer("#", new ConsumerBean())
+                new TopicConsumer("business.user.register", exchange -> System.out.println("Consuming: business.user.register")),
+                new TopicConsumer("business.user.*", exchange -> System.out.println("Consuming: business.user.*")),
+                new TopicConsumer("business.#", exchange -> System.out.println("Consuming: business.#")),
+                new TopicConsumer("#", exchange -> System.out.println("Consuming: #"))
         };
     }
 
