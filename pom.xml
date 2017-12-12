@@ -33,6 +33,13 @@
             <version>${camel.version}</version>
             <scope>test</scope>
         </dependency>
+        <!--ActiveMq-->
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-camel</artifactId>
+            <version>5.12.0</version>
+        </dependency>
 
         <!--Logging-->
         <dependency>

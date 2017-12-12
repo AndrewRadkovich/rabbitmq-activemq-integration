@@ -1,5 +1,6 @@
-package com.godeltech.camel;
+package com.godeltech.camel.rabbitmq;
 
+import com.godeltech.camel.ConsumerBean;
 import com.godeltech.camel.rabbitmq.routing.DirectConsumer;
 import com.godeltech.camel.rabbitmq.routing.DirectProducer;
 import org.apache.camel.Produce;
@@ -38,9 +39,4 @@ public class RoutingCamelRabbiMqDemo extends CamelTestSupport {
     private void publishTo(final String routingKey, final Object body) {
         producerTemplate.sendBodyAndHeader(ROUTED_EVENT_URL, body, RabbitMQConstants.ROUTING_KEY, routingKey);
     }
-
-    public void publish(final String topic, final Object body) {
-        producerTemplate.sendBodyAndHeader(ROUTED_EVENT_URL, body, RabbitMQConstants.ROUTING_KEY, topic);
-    }
-
 }

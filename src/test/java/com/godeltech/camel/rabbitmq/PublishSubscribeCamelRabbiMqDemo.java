@@ -1,5 +1,6 @@
-package com.godeltech.camel;
+package com.godeltech.camel.rabbitmq;
 
+import com.godeltech.camel.ConsumerBean;
 import com.godeltech.camel.rabbitmq.pubsub.FanoutProducer;
 import com.godeltech.camel.rabbitmq.pubsub.FanoutConsumer;
 import org.apache.camel.Produce;
