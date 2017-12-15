@@ -1,4 +1,4 @@
-package com.godeltech.springintegration.activemq;
+package com.godeltech.springintegration.rabbitmq;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -19,12 +19,12 @@ import org.springframework.integration.dsl.amqp.Amqp;
 @Configuration
 @EnableAutoConfiguration
 @IntegrationComponentScan
-public class AsyncConsumerDemo {
+public class SpringIntegrationRabbitMqDemo {
 
-    static final String GATEWAY = "produce.input";
+    static final String GATEWAY = "send.input";
 
     public static void main(String[] args) {
-        ConfigurableApplicationContext ctx = SpringApplication.run(AsyncConsumerDemo.class, args);
+        ConfigurableApplicationContext ctx = SpringApplication.run(SpringIntegrationRabbitMqDemo.class, args);
         ctx.getBean(ProducerGateway.class).produce("Test");
         ctx.close();
     }
@@ -55,9 +55,7 @@ public class AsyncConsumerDemo {
 
     @Bean
     Binding worksBinding() {
-        return BindingBuilder
-                .bind(worksQueue())
-                .to(worksExchange()).with("#").noargs();
+        return BindingBuilder.bind(worksQueue()).to(worksExchange()).with("#").noargs();
     }
 
     @Bean
@@ -77,7 +75,7 @@ public class AsyncConsumerDemo {
     @Bean
     public IntegrationFlow consume() {
         return IntegrationFlows.from(Amqp.inboundAdapter(rabbitConnectionFactory(), worksQueue()))
-                .log("Messageasdasdasdasdasd")
+                .log("Message: ")
                 .get();
     }
 }
