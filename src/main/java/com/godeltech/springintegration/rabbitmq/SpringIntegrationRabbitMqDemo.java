@@ -21,7 +21,7 @@ import org.springframework.integration.dsl.amqp.Amqp;
 @IntegrationComponentScan
 public class SpringIntegrationRabbitMqDemo {
 
-    static final String GATEWAY = "send.input";
+    static final String GATEWAY = "produce.input";
 
     public static void main(String[] args) {
         ConfigurableApplicationContext ctx = SpringApplication.run(SpringIntegrationRabbitMqDemo.class, args);

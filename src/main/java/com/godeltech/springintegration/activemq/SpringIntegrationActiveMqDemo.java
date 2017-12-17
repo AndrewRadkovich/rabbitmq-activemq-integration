@@ -10,18 +10,18 @@ import org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.annotation.Gateway;
 import org.springframework.integration.annotation.IntegrationComponentScan;
-import org.springframework.integration.annotation.MessagingGateway;
+import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.jms.Jms;
-import org.springframework.integration.scheduling.PollerMetadata;
-import org.springframework.scheduling.support.PeriodicTrigger;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.support.MessageBuilder;
 
 import javax.jms.ConnectionFactory;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 @Configuration
@@ -30,10 +30,18 @@ import java.util.List;
 public class SpringIntegrationActiveMqDemo {
 
     public static void main(String[] args) throws InterruptedException {
-        ConfigurableApplicationContext ctx = SpringApplication.run(SpringIntegrationActiveMqDemo.class, args);
-        List<String> strings = Arrays.asList("foo", "bar");
-        final ActiveMqGateway activeMqGateway = ctx.getBean(ActiveMqGateway.class);
-        activeMqGateway.send(strings);
+        final ConfigurableApplicationContext ctx = SpringApplication.run(SpringIntegrationActiveMqDemo.class, args);
+        final List<String> body = Arrays.asList("foo", "bar");
+
+        final MessageChannel requestChannel = ctx.getBean("requestChannel", MessageChannel.class);
+        final QueueChannel replyChannel = ctx.getBean("replyChannel", QueueChannel.class);
+
+        requestChannel.send(MessageBuilder.withPayload(body).build());
+
+        final Message<List<String>> reply = (Message<List<String>>) replyChannel.receive(600000);
+
+        System.out.println("reply = " + reply.getPayload());
+
         ctx.close();
     }
 
@@ -42,37 +50,32 @@ public class SpringIntegrationActiveMqDemo {
         return new ActiveMQConnectionFactory();
     }
 
-    @MessagingGateway
-    public interface ActiveMqGateway {
-        @Gateway(requestChannel = "jmsOutboundFlow.input")
-        Collection<String> send(Collection<String> strings);
+    @Bean
+    public IntegrationFlow jmsOutboundFlow() {
+        return f -> f
+                .channel(requestChannel())
+                .handleWithAdapter(h -> h.jms(connectionFactory()).destination(new ActiveMQQueue("queueName")));
     }
 
     @Bean
-    public IntegrationFlow jmsOutboundFlow() {
-        return f -> f.handleWithAdapter(h -> h
-                .jms(connectionFactory())
-                .destination(new ActiveMQQueue("queueName"))
-        );
+    public QueueChannel replyChannel() {
+        return new QueueChannel(100);
     }
 
-    @Bean(name = PollerMetadata.DEFAULT_POLLER)
-    public PollerMetadata defaultPoller() {
-
-        PollerMetadata pollerMetadata = new PollerMetadata();
-        pollerMetadata.setTrigger(new PeriodicTrigger(10));
-        return pollerMetadata;
+    @Bean
+    public MessageChannel requestChannel() {
+        return new DirectChannel();
     }
 
     @Bean
     public IntegrationFlow jmsInboundFlow() {
         return IntegrationFlows
-                .from(Jms.pollableChannel(connectionFactory()).destination(new ActiveMQQueue("queueName")))
+                .from(Jms.inboundGateway(connectionFactory()).destination(new ActiveMQQueue("queueName")))
                 .log("payload")
                 .split()
                 .<String, String>transform(String::toUpperCase)
                 .aggregate()
                 .log("payload")
-                .get();
+                .channel(replyChannel()).get();
     }
 }

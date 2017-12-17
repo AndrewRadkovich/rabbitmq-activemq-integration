@@ -82,7 +82,7 @@
         <dependency>
             <groupId>org.springframework.integration</groupId>
             <artifactId>spring-integration-java-dsl</artifactId>
-            <version>1.2.0.M1</version>
+            <version>1.2.3.RELEASE</version>
         </dependency>
 
         <!--Logging-->
